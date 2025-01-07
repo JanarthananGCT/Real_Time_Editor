@@ -43,7 +43,7 @@ export async function PUT(request: Request) {
 }
 
 
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+export async function DELETE(request: Request) {
   try {
     const client = await clientPromise;
     const db = client.db(process.env.NEXT_PUBLIC_DATABASE_NAME);
