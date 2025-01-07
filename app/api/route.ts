@@ -23,7 +23,7 @@ export async function GET() {
   try {
     const client = await clientPromise
     const db = client.db(process.env.NEXT_PUBLIC_DATABASE_NAME)
-    const items = await db.collection("docs").find({}).toArray()
+    const items = await db.collection("docs").find().toArray();
     return NextResponse.json(items)
   } catch (e) {
     return NextResponse.json({ error: 'Failed to fetch items' }, { status: 500 })
