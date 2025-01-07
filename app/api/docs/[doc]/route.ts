@@ -2,27 +2,30 @@ import { NextResponse } from 'next/server'
 import clientPromise from '@/lib/mongodb'
 import { ObjectId } from 'mongodb'
 
-export async function PUT(request: Request, { params }: { params: { doc: string } }) {
+export async function PUT(request: Request) {
   try {
     const client = await clientPromise;
     const db = client.db(process.env.NEXT_PUBLIC_DATABASE_NAME);
+
+    // Parse request data
     const { user, docs } = await request.json();
 
     console.log("Received payload:", { user, docs });
     console.log("Updating document with ID:", docs.id);
 
+    // Update the document
     const item = await db.collection("docs").findOneAndUpdate(
-      { user: user }, 
+      { user: user },
       {
         $set: {
           'docs.$[elem].title': docs.title,
           'docs.$[elem].isActive': docs.isActive,
-          'docs.$[elem].content': docs.content
-        }
+          'docs.$[elem].content': docs.content,
+        },
       },
       {
         arrayFilters: [{ 'elem.id': docs.id }],
-        returnDocument: 'after' 
+        returnDocument: 'after', // Use "returnDocument: 'after'" for MongoDB 5.0+
       }
     );
 
@@ -38,6 +41,7 @@ export async function PUT(request: Request, { params }: { params: { doc: string 
     return NextResponse.json({ error: 'Failed to update item' }, { status: 500 });
   }
 }
+
 
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
   try {
