@@ -24,12 +24,14 @@ import { Input } from "@/components/ui/input";
 export function AppSidebar({
   displayName,
   email,
+  docs,
   photoURL,
   setGlobalItem,
   ...props
 }: React.ComponentProps<typeof Sidebar> & {
   displayName: string;
   email: string;
+  docs: any;
   setGlobalItem: any;
   photoURL: string;
 }) {
@@ -37,14 +39,7 @@ export function AppSidebar({
     navMain: [
       {
         title: "My Documents",
-        items: [
-          {
-            id: uuidv4(),
-            title: "Untitled Doc",
-            isActive: false,
-            content: {}
-          },
-        ],
+        items: docs,
       },
     ],
     user: {
@@ -95,7 +90,7 @@ export function AppSidebar({
       setData((prevData) => {
         const updatedNavMain = prevData.navMain.map((nav) => ({
           ...nav,
-          items: nav.items.map((item) =>
+          items: nav.items.map((item: any) =>
             item.id === editingItem.id
               ? { ...item, title: editingItem.title }
               : item
@@ -148,7 +143,7 @@ export function AppSidebar({
                   </SidebarMenuButton>
                   {item.items?.length ? (
                     <SidebarMenuSub>
-                      {item.items.map((item) => (
+                      {item.items.map((item: any) => (
                         <div className="py-1" key={item.id}>
                           <SidebarMenuSubItem onMouseOver={() => setCurrentItem(item.id)}>
                             <SidebarMenuSubButton

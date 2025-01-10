@@ -22,52 +22,58 @@ import { User } from "firebase/auth";
 export default function Page({ user }: { user: User }) {
     const { displayName, email, photoURL } = user;
     const [globalItem, setGlobalItem] = useState<any>(null);
-    const getAllDocs = async() => {
-       const docs = await Axios.get('/api')
-       console.log(docs)
+    const [docs, setDocs] = useState<any>(null);
+    const getAllDocs = async (email: string) => {
+        const docs = await Axios.post('/api', {
+            data: {
+                user: email
+            }
+        });
+        setDocs(docs?.data[0])
     }
-    useEffect(()=>{
-        if(email){
-            getAllDocs()
+    useEffect(() => {
+        if (email) {
+            getAllDocs(email)
         }
-    },[])
-
+    }, [])
     return (
-        <SidebarProvider>
-            <AppSidebar side="left" displayName={`${displayName}`} email={`${email}`} photoURL={`${photoURL}`} setGlobalItem={setGlobalItem} />
-            {globalItem ? <>
-                <SidebarInset>
-                    <header className="flex h-16 shrink-0 items-center gap-2 border-b px-2">
-                        <SidebarTrigger className="-ml-1" />
-                        <Separator orientation="vertical" className="mr-2 h-4" />
-                        <Breadcrumb>
-                            <BreadcrumbList>
-                                <BreadcrumbItem className="hidden sm:block">
-                                    <BreadcrumbLink href="#">
-                                        My Documents
-                                    </BreadcrumbLink>
-                                </BreadcrumbItem>
-                                <BreadcrumbSeparator className="hidden sm:block" />
-                                <BreadcrumbItem>
-                                    <BreadcrumbPage>{globalItem.title}</BreadcrumbPage>
-                                </BreadcrumbItem>
-                            </BreadcrumbList>
-                        </Breadcrumb>
-                        <div className="-mr-1 ml-auto flex items-center gap-2">
-                            <ExportMenu />
+        <>
+            {docs?.docs ? <SidebarProvider>
+                <AppSidebar side="left" displayName={`${displayName}`} docs={docs?.docs} email={`${email}`} photoURL={`${photoURL}`} setGlobalItem={setGlobalItem} />
+                {globalItem ? <>
+                    <SidebarInset>
+                        <header className="flex h-16 shrink-0 items-center gap-2 border-b px-2">
+                            <SidebarTrigger className="-ml-1" />
+                            <Separator orientation="vertical" className="mr-2 h-4" />
+                            <Breadcrumb>
+                                <BreadcrumbList>
+                                    <BreadcrumbItem className="hidden sm:block">
+                                        <BreadcrumbLink href="#">
+                                            My Documents
+                                        </BreadcrumbLink>
+                                    </BreadcrumbItem>
+                                    <BreadcrumbSeparator className="hidden sm:block" />
+                                    <BreadcrumbItem>
+                                        <BreadcrumbPage>{globalItem.title}</BreadcrumbPage>
+                                    </BreadcrumbItem>
+                                </BreadcrumbList>
+                            </Breadcrumb>
+                            <div className="-mr-1 ml-auto flex items-center gap-2">
+                                <ExportMenu />
 
+                            </div>
+                        </header>
+                        <div className="p-4">
+                            <Editor doc={globalItem} email={email}  />
                         </div>
-                    </header>
-                    <div className="p-4">
-                        <Editor />
+                    </SidebarInset></> : <>
+                    <div className="flex justify-center items-center h-screen w-screen">
+                        have some glitch
                     </div>
-                </SidebarInset></> : <>
-                <div className="flex justify-center items-center h-screen w-screen">
-                    have some glitch
-                </div>
 
-            </>}
+                </>}
 
-        </SidebarProvider>
+            </SidebarProvider> : null}
+        </>
     )
 }

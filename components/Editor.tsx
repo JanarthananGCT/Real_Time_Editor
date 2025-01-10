@@ -1,10 +1,8 @@
 "use client";
 
+import { useEffect } from "react";
 import YooptaEditor, {
   createYooptaEditor,
-  Elements,
-  Blocks,
-  useYooptaEditor,
   YooptaContentValue,
   YooptaOnChangeOptions,
 } from "@yoopta/editor";
@@ -33,9 +31,7 @@ import ActionMenuList, {
 } from "@yoopta/action-menu-list";
 import Toolbar, { DefaultToolbarRender } from "@yoopta/toolbar";
 import LinkTool, { DefaultLinkToolRender } from "@yoopta/link-tool";
-import { useMemo, useRef, useState } from "react";
-import { WITH_BASIC_INIT_VALUE } from "./initValue";
-import SlateElement from "slate";
+import { useMemo, useRef, useState, useCallback } from "react";
 
 const plugins = [
   Paragraph,
@@ -72,21 +68,73 @@ const TOOLS = {
 
 const MARKS = [Bold, Italic, CodeMark, Underline, Strike, Highlight];
 
-function Editor() {
-  const [value, setValue] = useState<YooptaContentValue>();
+function Editor({ doc, email }: { doc: any, email: string | null }) {
+  const [value, setValue] = useState<YooptaContentValue>(() => doc?.content || {});
   const editor = useMemo(() => createYooptaEditor(), []);
   const selectionRef = useRef(null);
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const onChange = (
+  const handleSave = useCallback(async (contentToSave: YooptaContentValue) => {
+    try {
+      const payload = {
+        user: email,
+        docs: {
+          id: doc?.id,
+          title: doc?.title,
+          isActive: doc?.isActive,
+          content: contentToSave
+        }
+      };
+      
+      const response = await fetch(`/api/docs/${doc?.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to save document');
+      }
+      
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error saving document:', error);
+    }
+  }, [email, doc]);
+
+  const debouncedSave = useCallback((newValue: YooptaContentValue) => {
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+    saveTimeoutRef.current = setTimeout(() => {
+      handleSave(newValue);
+    }, 1000);
+  }, [handleSave]);
+
+  const onChange = useCallback((
     newValue: YooptaContentValue,
     options: YooptaOnChangeOptions
   ) => {
     setValue(newValue);
-  };
-  const handleSave = () => {
-    const editorContent = editor.getEditorValue();
-    
-  }
+    debouncedSave(newValue);
+  }, [debouncedSave]);
+
+  useEffect(() => {
+    if (doc?.content) {
+      setValue(doc.content);
+    }
+  }, [doc]);
+
+  useEffect(() => {
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, []);
 
   return (
     <div
