@@ -69,7 +69,8 @@ const TOOLS = {
 const MARKS = [Bold, Italic, CodeMark, Underline, Strike, Highlight];
 
 function Editor({ doc, email }: { doc: any, email: string | null }) {
-  const [value, setValue] = useState<YooptaContentValue>(() => doc?.content || {});
+  console.log(doc?.content);
+  const [value, setValue] = useState<YooptaContentValue>();
   const editor = useMemo(() => createYooptaEditor(), []);
   const selectionRef = useRef(null);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -123,9 +124,10 @@ function Editor({ doc, email }: { doc: any, email: string | null }) {
   }, [debouncedSave]);
 
   useEffect(() => {
-    if (doc?.content) {
-      setValue(doc.content);
-    }
+    // if (doc?.content) {
+    //   setValue(doc.content);
+      editor.setEditorValue(doc?.content); // Add this line to update editor content
+    // }
   }, [doc]);
 
   useEffect(() => {

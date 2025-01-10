@@ -29,11 +29,11 @@ export function AppSidebar({
   setGlobalItem,
   ...props
 }: React.ComponentProps<typeof Sidebar> & {
-  displayName: string;
-  email: string;
+  displayName: string | null;
+  email: string | null;
   docs: any;
   setGlobalItem: any;
-  photoURL: string;
+  photoURL: string | null;
 }) {
   const [data, setData] = React.useState({
     navMain: [
